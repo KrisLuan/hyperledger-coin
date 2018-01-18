@@ -7,12 +7,22 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
+
+
 type PocketChaincode struct {
 }
 
 func (t *PocketChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Init")
-	_, args := stub.GetFunctionAndParameters()
+	logger.Debugf("pocket chaincode Init")
+	function, args := stub.GetFunctionAndParameters()
+	if function != "init" {
+		logger.Errorf(ErrInvalidArgs)
+		return shim.ERROR(ErrInvalidArgs)
+	}
+
+	store := MakeChaincodeStore(stub)
+
+
 	var A, B string    // Entities
 	var Aval, Bval int // Asset holdings
 	var err error

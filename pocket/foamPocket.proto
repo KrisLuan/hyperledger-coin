@@ -1,0 +1,16 @@
+
+syntax = "proto3";
+
+package pocket;
+
+message Pocket {
+    string add = 1;
+    int64 balance = 2;
+}
+
+message PointInfo {
+    int64 accountTotal = 1;
+    int64 txTotal = 2;
+    int64 pointTotal = 3;
+    string holder = 4;
+}
