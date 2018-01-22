@@ -1,6 +1,9 @@
 package pocket
 
-import "github.com/golang/protobuf/proto"
+import (
+	"github.com/golang/protobuf/proto"
+	"strings"
+)
 
 func ParsePocket(data []byte) (*Pocket, error) {
 	if data == nil || len(data) == 0 {
@@ -25,4 +28,21 @@ func ParsePointInfo(data []byte) (*PointInfo, error) {
 	}
 
 	return pointInfo, nil
+}
+
+func ParsePointKind(data []byte) (*PointKind, error) {
+	if data == nil || len(data) == 0 {
+		return nil, ErrKeyNoData
+	}
+
+	pointKind := new(PointKind)
+	if err := proto.Unmarshal(data, pointKind); err != nil {
+		return nil, err
+	}
+
+	return pointKind, nil
+}
+
+func IsValidAddr(addr string) bool {
+	return strings.Contains(addr, "_")
 }

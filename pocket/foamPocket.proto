@@ -14,3 +14,7 @@ message PointInfo {
     int64 pointTotal = 3;
     string holder = 4;
 }
+
+message PointKind {
+    repeated string kind = 1;
+}

@@ -2,12 +2,17 @@ package pocket
 
 import "github.com/op/go-logging"
 
-const (
+var (
 	logger = logging.MustGetLogger("foam")
-	InitAddr = "foam"
-	InitTotalPoint = 20000000*100000000
 )
 
 const (
-	pointInfoKey = "pointCoinInfo"
+	DefaultPocketKind string	= "default"
+	InitAddr string				= "foam"
+	InitTotalPoint int64		= 20000000*100000000
+)
+
+const (
+	pointInfoKey	= "pointCoinInfo"
+	kindKey			= "kindKey"
 )
