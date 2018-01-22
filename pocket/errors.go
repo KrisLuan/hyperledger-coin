@@ -1,6 +1,11 @@
 package pocket
 
+import "errors"
+
 var (
-	ErrInvalidArgs = "invalid args"
-	ErrInvalidFunction = "invalid function"
+	ErrInvalidArgs = errors.New("invalid args")
+	ErrInvalidFunction = errors.New("invalid function")
+	ErrEmptyAddr = errors.New("the addr is empty")
+	ErrNoAccount = errors.New("no account found")
+	ErrKeyNoData = errors.New("state key found, but no data")
 )

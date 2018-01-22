@@ -7,3 +7,7 @@ const (
 	InitAddr = "foam"
 	InitTotalPoint = 20000000*100000000
 )
+
+const (
+	pointInfoKey = "pointCoinInfo"
+)
