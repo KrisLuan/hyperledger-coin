@@ -6,9 +6,11 @@ import (
 	"fmt"
 )
 
+//TODO: fomat log print
 
 type Store interface {
-	InitPocket(addr string, totalPoint int64) error
+	InitPocket(addr string, pubkey string, totalPoint int64) error
+	InitPocketStatistics(addr string, pubkey string, totalPoint int64) error
 	generateKey(addr string) string
 
 	GetPointInfo() (*PointInfo, error)
@@ -21,6 +23,7 @@ type Store interface {
 	PutPointKind(pointKind *PointKind) error
 
 	ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error
+	ModifyPointKind(kind string) error
 }
 
 // Store struct uses a chaincode stub for state access
@@ -29,16 +32,8 @@ type ChaincodeStore struct {
 	kind string
 }
 
-// MakeChaincodeStore returns a store for storing keys in the state
-func MakeChaincodeStore(stub shim.ChaincodeStubInterface, kind string) Store {
-	store := &ChaincodeStore{}
-	store.stub = stub
-	store.kind = kind
-	return store
-}
-
 //可能需要加入公钥字段，同时验证私钥的合法性
-func (s *ChaincodeStore)InitPocket(addr string, totalPoint int64) error {
+func (s *ChaincodeStore)InitPocket(addr string, pubkey string, totalPoint int64) error {
 	kind := []string{DefaultPocketKind}
 	pointKind := &PointKind{
 		Kind: kind,
@@ -50,11 +45,12 @@ func (s *ChaincodeStore)InitPocket(addr string, totalPoint int64) error {
 	}
 
 	logger.Debugf("init pocket")
-	return initPocket(addr, totalPoint, s)
+	return s.InitPocketStatistics(addr, pubkey, totalPoint)
 }
 
-func initPocket(addr string, totalPoint int64, s *ChaincodeStore) error {
-	if IsValidAddr(InitAddr) {
+//初始化积分统计信息和初始积分
+func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPoint int64) error {
+	if IsValidAddr(InitAddr, pubkey) {
 		return ErrInvalidAddr
 	}
 	//TODO verfiy pubkey and addr
@@ -95,7 +91,6 @@ func (s *ChaincodeStore) GetPointInfo() (*PointInfo, error) {
 }
 
 func (s *ChaincodeStore) PutPointInfo(pointInfo *PointInfo) error {
-	logger.Debugf("put point info [%v]", pointInfo)
 	coinBytes, err := proto.Marshal(pointInfo)
 	if err != nil {
 		return err
@@ -104,6 +99,7 @@ func (s *ChaincodeStore) PutPointInfo(pointInfo *PointInfo) error {
 	if err := s.stub.PutState(s.generateKey(pointInfoKey), coinBytes); err != nil {
 		return err
 	}
+	logger.Debugf("put point info [%v]", pointInfo)
 
 	return nil
 }
@@ -159,11 +155,23 @@ func (s *ChaincodeStore) ModifyPointInfo(increaseAccount int64, increaseTx int64
 		return err
 	}
 
+	logger.Debugf("modify point before [%v]", pointInfo)
 	pointInfo.AccountTotal += increaseAccount
 	pointInfo.TxTotal += increaseTx
 	pointInfo.PointTotal += increasePoint
 
 	return s.PutPointInfo(pointInfo)
+}
+
+func (s * ChaincodeStore) ModifyPointKind(kind string) error {
+	pointKind, err := s.GetPointKind()
+	if err != nil {
+		return err
+	}
+
+	pointKind.Kind = append(pointKind.Kind, kind)
+
+	return s.PutPointKind(pointKind)
 }
 
 

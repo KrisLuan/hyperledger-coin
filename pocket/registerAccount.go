@@ -6,7 +6,7 @@ import (
 )
 
 func (t *PocketChaincode)registerAccount(store Store, args []string) pb.Response {
-	if len(args) != 1 {
+	if len(args) != 3 {
 		return shim.Error(ErrInvalidArgs.Error())
 	}
 
@@ -33,5 +33,4 @@ func (t *PocketChaincode)registerAccount(store Store, args []string) pb.Response
 	}
 
 	return shim.Success(nil)
-
 }

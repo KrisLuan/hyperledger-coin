@@ -3,7 +3,16 @@ package pocket
 import (
 	"github.com/golang/protobuf/proto"
 	"strings"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
+
+// MakeChaincodeStore returns a store for storing keys in the state
+func MakeChaincodeStore(stub shim.ChaincodeStubInterface, kind string) Store {
+	store := &ChaincodeStore{}
+	store.stub = stub
+	store.kind = kind
+	return store
+}
 
 func ParsePocket(data []byte) (*Pocket, error) {
 	if data == nil || len(data) == 0 {
@@ -43,7 +52,7 @@ func ParsePointKind(data []byte) (*PointKind, error) {
 	return pointKind, nil
 }
 
-func IsValidAddr(addr string) bool {
+func IsValidAddr(addr string, pubkey string) bool {
 	return strings.Contains(addr, "_")
 }
 

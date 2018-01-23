@@ -10,6 +10,7 @@ const (
 	DefaultPocketKind string	= "default"
 	InitAddr string				= "foam"
 	InitTotalPoint int64		= 20000000*100000000
+	InitPubkey string			= "fafasdfasdfas"
 )
 
 const (

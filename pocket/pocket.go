@@ -20,7 +20,7 @@ func (t *PocketChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	store := MakeChaincodeStore(stub, DefaultPocketKind)
-	err := store.InitPocket(InitAddr, InitTotalPoint)
+	err := store.InitPocket(InitAddr,InitPubkey, InitTotalPoint)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -46,7 +46,7 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 	switch function {
 	case IF_INITPOCKET:
-		return shim.Error("")
+		return t.newPocket(store, args)
 	case IF_REGISTER:
 		return t.registerAccount(store, args)
 	case IF_TRANSFER:
