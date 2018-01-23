@@ -46,3 +46,7 @@ func ParsePointKind(data []byte) (*PointKind, error) {
 func IsValidAddr(addr string) bool {
 	return strings.Contains(addr, "_")
 }
+
+func VerifyAddr(addr string, pubkey string) bool {
+	return true
+}

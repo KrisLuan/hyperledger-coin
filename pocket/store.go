@@ -8,17 +8,19 @@ import (
 
 
 type Store interface {
-	InitPocket(string, int64) error
-	generateKey(string) string
+	InitPocket(addr string, totalPoint int64) error
+	generateKey(addr string) string
 
 	GetPointInfo() (*PointInfo, error)
-	PutPointInfo(*PointInfo) error
+	PutPointInfo(pointInfo *PointInfo) error
 
-	GetPocket(string) (*Pocket, error)
-	PutPocket(*Pocket) error
+	GetPocket(addr string) (*Pocket, error)
+	PutPocket(pocket *Pocket) error
 
 	GetPointKind() (*PointKind, error)
-	PutPointKind(*PointKind) error
+	PutPointKind(pointKind *PointKind) error
+
+	ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error
 }
 
 // Store struct uses a chaincode stub for state access
@@ -151,6 +153,18 @@ func (s *ChaincodeStore) GetPointKind() (*PointKind, error) {
 	return ParsePointKind(data)
 }
 
+func (s *ChaincodeStore) ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error {
+	pointInfo, err := s.GetPointInfo()
+	if err != nil {
+		return err
+	}
+
+	pointInfo.AccountTotal += increaseAccount
+	pointInfo.TxTotal += increaseTx
+	pointInfo.PointTotal += increasePoint
+
+	return s.PutPointInfo(pointInfo)
+}
 
 
 

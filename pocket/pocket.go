@@ -48,7 +48,7 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case IF_INITPOCKET:
 		return shim.Error("")
 	case IF_REGISTER:
-		return shim.Error("")
+		return t.registerAccount(store, args)
 	case IF_TRANSFER:
 		return shim.Error("")
 	case QF_ADDRS:
@@ -57,6 +57,8 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error("")
 	case QF_POINTKIND:
 		return shim.Error("")
+	default:
+		return shim.Error(ErrInvalidFunction.Error())
 	}
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")

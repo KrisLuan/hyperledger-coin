@@ -4,17 +4,18 @@ syntax = "proto3";
 package pocket;
 
 message Pocket {
-    string addr = 1;
-    int64 balance = 2;
+    string addr = 1;    //用户地址
+    int64 balance = 2;  //余额
+    string pubkey = 3;  //用户公钥
 }
 
 message PointInfo {
-    int64 accountTotal = 1;
-    int64 txTotal = 2;
-    int64 pointTotal = 3;
-    string holder = 4;
+    int64 accountTotal = 1; //账户总数
+    int64 txTotal = 2;      //交易总数
+    int64 pointTotal = 3;   //积分总数
+    string holder = 4;      //填充字段
 }
 
 message PointKind {
-    repeated string kind = 1;
+    repeated string kind = 1;   //积分种类
 }
