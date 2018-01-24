@@ -9,6 +9,21 @@ message Pocket {
     string pubkey = 3;  //用户公钥
 }
 
+message TXMap{
+    message TX {
+        int64 timestamp = 1;
+        string inputAddr = 2;
+        int64 inputBalance = 3;
+        string outputAddr = 4;
+        string outputValue = 5;
+        string script = 6;          //签名
+        int64 fee = 7;
+    }
+    map<string, TX> txMap = 1;
+    int64 timestamp = 2;
+    string founder = 3;
+}
+
 message PointInfo {
     int64 accountTotal = 1; //账户总数
     int64 txTotal = 2;      //交易总数
