@@ -1,9 +1,6 @@
 package pocket
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -42,6 +39,9 @@ const (
 func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Debugf("pocket chaincode invoke")
 	function, args := stub.GetFunctionAndParameters()
+	if len(args) == 0 {
+		return shim.Error(ErrInvalidArgs.Error())
+	}
 	store := MakeChaincodeStore(stub, args[0])
 
 	switch function {
@@ -52,11 +52,11 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case IF_TRANSFER:
 		return shim.Error("")
 	case QF_ADDRS:
-		return shim.Error("")
+		return t.queryAddrs(store, args)
 	case QF_STATISTICS:
-		return shim.Error("")
+		return t.queryStatistics(store, args)
 	case QF_POINTKIND:
-		return shim.Error("")
+		return t.queryPointkind(store, args)
 	default:
 		return shim.Error(ErrInvalidFunction.Error())
 	}
