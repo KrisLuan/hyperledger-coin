@@ -9,16 +9,24 @@ message Pocket {
     string pubkey = 3;  //用户公钥
 }
 
+message Output{
+    string outputAddr = 4;
+    int64 outputValue = 5;
+}
+
+//需要格外注意，每个addr只能读取一次
 message TXMap{
     message TX {
         int64 timestamp = 1;
         string inputAddr = 2;
         int64 inputBalance = 3;
-        string outputAddr = 4;
-        string outputValue = 5;
+        int64 nounce = 4;
+        //需要处理output addr重复问题
+        repeated Output output = 5;
         string script = 6;          //签名
         int64 fee = 7;
     }
+    //the string is input addr
     map<string, TX> txMap = 1;
     int64 timestamp = 2;
     string founder = 3;
@@ -33,4 +41,9 @@ message PointInfo {
 
 message PointKind {
     repeated string kind = 1;   //积分种类
+}
+
+message QueryResult {
+    int64 nounce = 1;
+    int64 balance = 2;
 }
