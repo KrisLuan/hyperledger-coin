@@ -11,4 +11,6 @@ var (
 	ErrInvalidAddr			= errors.New("the addr is invalid(contains '_')")
 	ErrAlreadyRegistered	= errors.New("account already registered")
 	ErrAddrWithPubkey		= errors.New("addr not matches this pubkey")
+	ErrTimeOut				= errors.New("the tx maps timestamp is time out(two minutes or more)")
+	ErrInvalidTX			= errors.New("some transaction invalid")
 )
