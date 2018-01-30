@@ -5,7 +5,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-
+//需要检查，整个系统中的数据不能有重复读取的问题，否则会导致数据不一致
 type PocketChaincode struct {
 }
 
@@ -32,6 +32,7 @@ const (
 	IF_TRANSFER string		= "invoke_transfer"
 
 	QF_ADDRS string			= "query_addrs"
+	QF_BALANCE string		= "query_balance"
 	QF_STATISTICS string	= "query_statistics"
 	QF_POINTKIND string		= "query_pointkind"
 )
@@ -50,9 +51,11 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case IF_REGISTER:
 		return t.registerAccount(store, args)
 	case IF_TRANSFER:
-		return shim.Error("")
+		return t.transfer(store, args)
 	case QF_ADDRS:
 		return t.queryAddrs(store, args)
+	case QF_BALANCE:
+		return t.queryBalance(store, args)
 	case QF_STATISTICS:
 		return t.queryStatistics(store, args)
 	case QF_POINTKIND:
@@ -61,5 +64,5 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error(ErrInvalidFunction.Error())
 	}
 
-	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
+	return shim.Error(ErrInvalidFunction.Error())
 }
