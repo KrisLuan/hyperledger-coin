@@ -4,6 +4,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/golang/protobuf/proto"
 	"fmt"
+	"strconv"
 )
 
 //TODO: fomat log print
@@ -18,12 +19,17 @@ type Store interface {
 
 	GetPocket(addr string) (*Pocket, error)
 	PutPocket(pocket *Pocket) error
+	GetAllAssets(addr string) (int64, int64, error)
+	MergeStateByPartialCompositeKey(objectType string, keys []string) (int64, error)
+	AddCompositeOutput(objectType string, attributes []string, value int64) error
 
 	GetPointKind() (*PointKind, error)
 	PutPointKind(pointKind *PointKind) error
 
 	ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error
 	ModifyPointKind(kind string) error
+
+	GetTxID() string
 }
 
 // Store struct uses a chaincode stub for state access
@@ -174,9 +180,83 @@ func (s * ChaincodeStore) ModifyPointKind(kind string) error {
 	return s.PutPointKind(pointKind)
 }
 
+func (s *ChaincodeStore)MergeStateByPartialCompositeKey(objectType string, keys []string) (int64, error) {
+	resultIterator, err := s.stub.GetStateByPartialCompositeKey(objectType, keys)
+	if err != nil {
+		return 0, err
+	}
+	defer resultIterator.Close()
+
+	var assets int64
+	assets = 0
+	for i := 0; resultIterator.HasNext(); i++ {
+		responseRange, err := resultIterator.Next()
+		if err != nil {
+			return 0, err
+		}
+		value, err := strconv.ParseInt(string(responseRange.GetValue()), 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		assets += value
+
+		err = s.stub.DelState(responseRange.Key)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return assets, nil
+}
 
 
 
+//注意，这个函数和上面的getPocket有重复读取的问题，混用要注意了,重复读取可能会有不一致的情况
+func (s *ChaincodeStore) GetAllAssets(addr string) (int64, int64, error) {
+	resultIterator, err := s.stub.GetStateByPartialCompositeKey(CompositeIndexName, []string{addr})
+	if err != nil {
+		return 0, 0, err
+	}
+	defer resultIterator.Close()
+
+	var assets int64
+	assets = 0
+	for i := 0; resultIterator.HasNext(); i++ {
+		responseRange, err := resultIterator.Next()
+		if err != nil {
+			return 0, 0, err
+		}
+		value, err := strconv.ParseInt(string(responseRange.GetValue()), 10, 64)
+		if err != nil {
+			return 0, 0, err
+		}
+		assets += value
+	}
+
+	pocket, err := s.GetPocket(addr)
+	if err != nil {
+		return 0, 0, err
+	}
+	assets += pocket.GetBalance()
+
+	return assets, pocket.GetBalance(), nil
+}
+
+func (s *ChaincodeStore)GetTxID() string {
+	return s.stub.GetTxID()
+}
+
+func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []string, value int64) error {
+	compositeKey, compositeErr := s.stub.CreateCompositeKey(CompositeIndexName, attributes)
+	if compositeErr != nil {
+		return compositeErr
+	}
+	compositePutErr := s.stub.PutState(compositeKey, []byte(strconv.FormatInt(value, 10)))
+	if compositePutErr != nil {
+		return compositePutErr
+	}
+	return nil
+}
 
 
 
