@@ -41,7 +41,7 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		}
 		assets += inputPocket.GetBalance()
 
-		//删除复合键
+		//删除复合键，不需要考虑在共识过程增加的那些复合键，只合并并删除当前的复合键
 		mergeAssets, err := store.MergeStateByPartialCompositeKey(CompositeIndexName, []string{tx.GetInputAddr()})
 		if err != nil {
 			return shim.Error(err.Error())
@@ -56,6 +56,17 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 			assets -= output.GetOutputValue()
 		}
 
+		//fee
+		err = store.AddCompositeOutput(CompositeIndexName, []string{InitAddr, txid, string(i), "0"}, tx.GetFee())
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		assets -= tx.GetFee()
+		if assets < 0 {
+			return shim.Error(ErrAccountNotEnoughBalance.Error())
+		}
+
+		//change
 		inputPocket.Balance = assets
 		err = store.PutPocket(inputPocket)
 		if err != nil {
