@@ -3,7 +3,7 @@ package pocket
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"github.com/hyperledger/fabric/hyperledger-coin/btcd/btcec"
+	"github.com/hyperledger-coin/btcd/btcec"
 )
 
 func signedmessage(tx *TXMap_TX) ([]byte, error) {

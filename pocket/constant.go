@@ -1,6 +1,6 @@
 package pocket
 
-import "github.com/op/go-logging"
+import "github.com/hyperledger-coin/go-logging"
 
 var (
 	logger = logging.MustGetLogger("foam")

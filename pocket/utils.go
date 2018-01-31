@@ -1,7 +1,7 @@
 package pocket
 
 import (
-	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-coin/proto"
 	"strings"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"crypto/sha256"

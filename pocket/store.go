@@ -2,7 +2,7 @@ package pocket
 
 import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-coin/proto"
 	"fmt"
 	"strconv"
 )
@@ -56,7 +56,7 @@ func (s *ChaincodeStore)InitPocket(addr string, pubkey string, totalPoint int64)
 
 //初始化积分统计信息和初始积分
 func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPoint int64) error {
-	if IsValidAddr(InitAddr, pubkey) {
+	if !IsValidAddr(InitAddr, pubkey) {
 		return ErrInvalidAddr
 	}
 	//TODO verfiy pubkey and addr

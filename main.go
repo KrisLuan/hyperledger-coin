@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/hyperledger/fabric/hyperledger-coin/pocket"
+	"github.com/hyperledger-coin/pocket"
 )
 
 func main() {

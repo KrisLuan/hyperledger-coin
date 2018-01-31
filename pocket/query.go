@@ -5,7 +5,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"strconv"
 	"encoding/base64"
-	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-coin/proto"
 )
 
 func (t *PocketChaincode)queryAddrs(store Store, args []string) pb.Response {
