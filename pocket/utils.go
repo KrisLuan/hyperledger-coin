@@ -4,6 +4,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"strings"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"crypto/sha256"
+	"encoding/hex"
 )
 
 // MakeChaincodeStore returns a store for storing keys in the state
@@ -70,4 +72,16 @@ func IsValidAddr(addr string, pubkey string) bool {
 
 func VerifyAddr(addr string, pubkey string) bool {
 	return true
+}
+
+// TxHash generates the Hash for the transaction.
+func TxHash(tx *TXMap_TX) string {
+	txBytes, err := proto.Marshal(tx)
+	if err != nil {
+		return ""
+	}
+
+	fHash := sha256.Sum256(txBytes)
+	lHash := sha256.Sum256(fHash[:])
+	return hex.EncodeToString(lHash[:])
 }

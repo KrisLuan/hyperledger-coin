@@ -29,11 +29,6 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 
 	txid := store.GetTxID()
 	for i, tx := range txMaps.TxMap {
-		if !VerifyTx(tx, store) {
-			return shim.Error(ErrInvalidTX.Error())
-		}
-
-		//合并复合键
 		var assets int64
 		inputPocket, err := store.GetPocket(tx.GetInputAddr())
 		if err != nil {
@@ -41,6 +36,11 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		}
 		assets += inputPocket.GetBalance()
 
+		if !VerifyTx(tx, inputPocket.GetPubkey(), store) {
+			return shim.Error(ErrInvalidTX.Error())
+		}
+
+		//合并复合键
 		//删除复合键，不需要考虑在共识过程增加的那些复合键，只合并并删除当前的复合键
 		mergeAssets, err := store.MergeStateByPartialCompositeKey(CompositeIndexName, []string{tx.GetInputAddr()})
 		if err != nil {
@@ -77,7 +77,7 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 	return shim.Success(nil)
 }
 
-func VerifyTx(tx *TXMap_TX, store Store) bool {
+func VerifyTx(tx *TXMap_TX, publicKey string, store Store) bool {
 	assets, nounce, err := store.GetAllAssets(tx.GetInputAddr())
 	if err != nil {
 		return false
@@ -87,6 +87,10 @@ func VerifyTx(tx *TXMap_TX, store Store) bool {
 		return false
 	}
 	var outputValue int64
+	//验证是否有输出
+	if len(tx.GetOutput()) < 1 {
+		return false
+	}
 	for _, output := range tx.GetOutput() {
 		outputValue += output.GetOutputValue()
 	}
@@ -96,10 +100,5 @@ func VerifyTx(tx *TXMap_TX, store Store) bool {
 	}
 
 	//签名验证
-	return VerifySign()
-}
-
-//TODO now the verfiy sign is null
-func VerifySign() bool{
-	return true
+	return VerifySign(tx, publicKey)
 }
