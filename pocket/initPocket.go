@@ -14,14 +14,17 @@ func (t *PocketChaincode)newPocket(store Store, args []string) pb.Response {
 	kind := args[0]
 	addr := args[1]
 	pubkey := args[2]
+	logger.Debugf("init new pocket, kind [%s], addr [%s], pubkey [%s], total point [%s]", kind, addr, pubkey, args[3])
 	totalPoint, err := strconv.ParseInt(args[3], 10, 64)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	logger.Debugf("modify point kind")
 	if err := store.ModifyPointKind(kind); err != nil {
 		return shim.Error(err.Error())
 	}
 
+	logger.Debugf("init [%s] pocket statistics", kind)
 	if err := store.InitPocketStatistics(addr, pubkey, totalPoint); err != nil {
 		return shim.Error(err.Error())
 	}

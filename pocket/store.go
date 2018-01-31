@@ -87,7 +87,6 @@ func (s *ChaincodeStore) generateKey(addr string) string {
 }
 
 func (s *ChaincodeStore) GetPointInfo() (*PointInfo, error) {
-	logger.Debugf("get point info")
 	data, err := s.stub.GetState(s.generateKey(pointInfoKey))
 	if err != nil {
 		return nil, err
@@ -105,13 +104,11 @@ func (s *ChaincodeStore) PutPointInfo(pointInfo *PointInfo) error {
 	if err := s.stub.PutState(s.generateKey(pointInfoKey), coinBytes); err != nil {
 		return err
 	}
-	logger.Debugf("put point info [%v]", pointInfo)
 
 	return nil
 }
 
 func (s *ChaincodeStore) GetPocket(addr string) (*Pocket, error) {
-	logger.Debugf("get pocket with [%s]", addr)
 	if addr == "" {
 		return nil, ErrEmptyAddr
 	}
@@ -146,7 +143,6 @@ func (s *ChaincodeStore) PutPointKind(pointKind *PointKind) error {
 }
 
 func (s *ChaincodeStore) GetPointKind() (*PointKind, error) {
-	logger.Debugf("get point kind")
 	data, err := s.stub.GetState(kindKey)
 	if err != nil {
 		return nil, err
@@ -176,7 +172,7 @@ func (s * ChaincodeStore) ModifyPointKind(kind string) error {
 	}
 
 	pointKind.Kind = append(pointKind.Kind, kind)
-
+	logger.Debugf("put point kind [%v]", pointKind)
 	return s.PutPointKind(pointKind)
 }
 

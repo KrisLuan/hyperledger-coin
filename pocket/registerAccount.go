@@ -9,6 +9,7 @@ func (t *PocketChaincode)registerAccount(store Store, args []string) pb.Response
 	if len(args) != 3 {
 		return shim.Error(ErrInvalidArgs.Error())
 	}
+	logger.Debugf("register account which kind [%v], addr [%v], public key[%v]", args[0], args[1], args[2])
 
 	addr := args[1]
 	pubkey := args[2]

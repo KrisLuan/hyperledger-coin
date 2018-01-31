@@ -3,10 +3,6 @@ package pocket
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
-	"math/big"
-	"os/exec"
-	"strings"
 	"github.com/hyperledger/fabric/hyperledger-coin/btcd/btcec"
 )
 
@@ -40,6 +36,7 @@ func VerifySign(tx *TXMap_TX, publicKey string) bool{
 		return false
 	}
 
+	logger.Debugf("verify ecdsa publicKey [%v] message [%v] script [%v]", publicKey, base64.StdEncoding.EncodeToString(message), tx.GetScript())
 	out := verfiyEcdsa(publicKey, message, tx.GetScript())
 	return out
 }
