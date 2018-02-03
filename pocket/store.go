@@ -57,6 +57,7 @@ func (s *ChaincodeStore)InitPocket(addr string, pubkey string, totalPoint int64)
 //初始化积分统计信息和初始积分
 func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPoint int64) error {
 	if !IsValidAddr(InitAddr, pubkey) {
+		logger.Debugf("test")
 		return ErrInvalidAddr
 	}
 	//TODO verfiy pubkey and addr

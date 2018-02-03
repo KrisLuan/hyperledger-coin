@@ -8,7 +8,7 @@ import (
 )
 
 func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error(ErrInvalidArgs.Error())
 	}
 

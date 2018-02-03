@@ -13,7 +13,7 @@ func (t *PocketChaincode)registerAccount(store Store, args []string) pb.Response
 
 	addr := args[1]
 	pubkey := args[2]
-	if VerifyAddr(addr, pubkey) {
+	if IsValidAddr(addr, pubkey) {
 		return shim.Error(ErrAddrWithPubkey.Error())
 	}
 	if tmpPocket, err := store.GetPocket(addr); err == nil && tmpPocket != nil {

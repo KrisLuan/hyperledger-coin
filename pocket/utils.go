@@ -70,10 +70,6 @@ func IsValidAddr(addr string, pubkey string) bool {
 	return !strings.Contains(addr, "_")
 }
 
-func VerifyAddr(addr string, pubkey string) bool {
-	return true
-}
-
 // TxHash generates the Hash for the transaction.
 func TxHash(tx *TXMap_TX) string {
 	txBytes, err := proto.Marshal(tx)
