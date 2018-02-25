@@ -29,6 +29,9 @@ type Store interface {
 	ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error
 	ModifyPointKind(kind string) error
 
+	PutTxFeeInfo(txFeeInfo *TxFeeInfo) error
+	GetTxFeeInfo() (*TxFeeInfo, error)
+
 	GetTxID() string
 }
 
@@ -61,6 +64,15 @@ func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPo
 		return ErrInvalidAddr
 	}
 	//TODO verfiy pubkey and addr
+
+	logger.Debugf("put tx fee info")
+	txFeeInfo := &TxFeeInfo{
+		TxFeeAddr:	addr,
+		Ratio:		2,
+	}
+	if err := s.PutTxFeeInfo(txFeeInfo); err != nil {
+		return err
+	}
 
 	pointInfo := &PointInfo{
 		AccountTotal:	0,
@@ -255,7 +267,23 @@ func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []strin
 	return nil
 }
 
+func (s *ChaincodeStore) PutTxFeeInfo(txFeeInfo *TxFeeInfo) error {
+	logger.Debugf("put point kind [%v]", txFeeInfo)
+	data, err := proto.Marshal(txFeeInfo)
+	if err != nil {
+		return err
+	}
+	return s.stub.PutState(s.kind + "_" + txFeeKey, data)
+}
 
+func (s *ChaincodeStore) GetTxFeeInfo() (*TxFeeInfo, error) {
+	data, err := s.stub.GetState(s.kind + "_" + txFeeKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return ParseTxFeeInfo(data)
+}
 
 
 
