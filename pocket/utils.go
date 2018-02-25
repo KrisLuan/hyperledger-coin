@@ -81,3 +81,15 @@ func TxHash(tx *TXMap_TX) string {
 	lHash := sha256.Sum256(fHash[:])
 	return hex.EncodeToString(lHash[:])
 }
+func ParseTxFeeInfo(data []byte) (*TxFeeInfo, error) {
+	if data == nil || len(data) == 0 {
+		return nil, ErrKeyNoData
+	}
+
+	txFeeInfo := new(TxFeeInfo)
+	if err := proto.Unmarshal(data, txFeeInfo); err != nil {
+		return nil, err
+	}
+
+	return txFeeInfo, nil
+}
