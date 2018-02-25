@@ -30,6 +30,7 @@ const (
 	IF_INITPOCKET string	= "invoke_initpocket"
 	IF_REGISTER string		= "invoke_register"
 	IF_TRANSFER string		= "invoke_transfer"
+	IF_MODIFYTXFEE string	= "invoke_modifytxfee"
 
 	QF_ADDRS string			= "query_addrs"
 	QF_BALANCE string		= "query_balance"
@@ -52,6 +53,8 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.registerAccount(store, args)
 	case IF_TRANSFER:
 		return t.transfer(store, args)
+	case IF_MODIFYTXFEE:
+		return t.modifyTxFee(store, args)
 	case QF_ADDRS:
 		return t.queryAddrs(store, args)
 	case QF_BALANCE:

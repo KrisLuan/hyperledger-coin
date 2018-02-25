@@ -37,7 +37,11 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		}
 		assets += inputPocket.GetBalance()
 
-		if !VerifyTx(tx, inputPocket.GetPubkey(), store) {
+		txFeeInfo, err := store.GetTxFeeInfo()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		if !VerifyTx(tx, inputPocket.GetPubkey(), txFeeInfo, store) {
 			return shim.Error(ErrInvalidTX.Error())
 		}
 
@@ -61,7 +65,7 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 
 		//fee
 		logger.Debugf("fee: add composite output [%v] [%v] [%v] [0]",InitAddr, txid, string(i))
-		err = store.AddCompositeOutput(CompositeIndexName, []string{InitAddr, txid, string(i), "0"}, tx.GetFee())
+		err = store.AddCompositeOutput(CompositeIndexName, []string{txFeeInfo.GetTxFeeAddr(), txid, string(i), "0"}, tx.GetFee())
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -82,7 +86,7 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 	return shim.Success(nil)
 }
 
-func VerifyTx(tx *TXMap_TX, publicKey string, store Store) bool {
+func VerifyTx(tx *TXMap_TX, publicKey string, txFeeInfo *TxFeeInfo, store Store) bool {
 	assets, nounce, err := store.GetAllAssets(tx.GetInputAddr())
 	if err != nil {
 		return false
@@ -103,6 +107,12 @@ func VerifyTx(tx *TXMap_TX, publicKey string, store Store) bool {
 	//输入输出是否匹配
 	logger.Debugf("input balance [%v] output and fee [%v]", tx.GetInputBalance(), outputValue + tx.GetFee())
 	if tx.GetInputBalance() < (outputValue + tx.GetFee()) {
+		return false
+	}
+
+	//验证交易费是否大于0.2%
+	if !(tx.GetFee()*1000/outputValue >= txFeeInfo.GetRatio()) {
+		logger.Errorf(ErrNotEnoughFee.Error())
 		return false
 	}
 

@@ -17,6 +17,7 @@ const (
 )
 
 const (
-	pointInfoKey	= "pointCoinInfo"
-	kindKey			= "kindKey"
+	pointInfoKey	= "pointCoinInfo_key"
+	kindKey			= "kind_key"
+	txFeeKey		= "txFee_key"
 )

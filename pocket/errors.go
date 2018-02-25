@@ -14,4 +14,5 @@ var (
 	ErrTimeOut					= errors.New("the tx maps timestamp is time out(two minutes or more)")
 	ErrInvalidTX				= errors.New("some transaction invalid")
 	ErrAccountNotEnoughBalance	= errors.New("account has not enough balance")
+	ErrNotEnoughFee				= errors.New("the tx has not enough fee")
 )
