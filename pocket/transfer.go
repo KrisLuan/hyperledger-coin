@@ -5,25 +5,30 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"encoding/base64"
 	"time"
+	"strconv"
 )
 
 func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 	if len(args) != 2 {
+		logger.Error(ErrInvalidArgs.Error())
 		return shim.Error(ErrInvalidArgs.Error())
 	}
 
 	txDataBase64 := args[1]
 	txData, err := base64.StdEncoding.DecodeString(txDataBase64)
 	if err != nil {
+		logger.Error(err.Error())
 		return shim.Error(err.Error())
 	}
 	txMaps, err := ParseTxMaps(txData)
 	if err != nil {
+		logger.Error(err.Error())
 		return shim.Error(err.Error())
 	}
 	logger.Debugf("tx maps is [%v]", txMaps)
 	//保证签名时间在两分钟以内
 	if time.Now().UTC().Unix() - txMaps.Timestamp > 120 {
+		logger.Error(ErrTimeOut.Error())
 		return shim.Error(ErrTimeOut.Error())
 	}
 
@@ -33,15 +38,18 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		var assets int64
 		inputPocket, err := store.GetPocket(tx.GetInputAddr())
 		if err != nil {
+			logger.Error(err.Error())
 			return shim.Error(err.Error())
 		}
 		assets += inputPocket.GetBalance()
 
 		txFeeInfo, err := store.GetTxFeeInfo()
 		if err != nil {
+			logger.Error(err.Error())
 			return shim.Error(err.Error())
 		}
 		if !VerifyTx(tx, inputPocket.GetPubkey(), txFeeInfo, store) {
+			logger.Error(ErrInvalidTX.Error())
 			return shim.Error(ErrInvalidTX.Error())
 		}
 
@@ -50,14 +58,17 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		logger.Debugf("merge state which addr is [%v]", tx.GetInputAddr())
 		mergeAssets, err := store.MergeStateByPartialCompositeKey(CompositeIndexName, []string{tx.GetInputAddr()})
 		if err != nil {
+			logger.Error(err.Error())
 			return shim.Error(err.Error())
 		}
 		assets += mergeAssets
 
 		for j, output := range tx.GetOutput() {
-			logger.Debugf("add composite output [%v] [%v] [%v] [%v]", output.GetOutputAddr(), txid, string(i), string(j))
-			err := store.AddCompositeOutput(CompositeIndexName, []string{output.GetOutputAddr(), txid, string(i), string(j)}, output.GetOutputValue())
+			//logger.Debug(output.GetOutputAddr(), txid, i, j)
+			logger.Debugf("add composite output [%v] [%v] [%v] [%v]", output.GetOutputAddr(), txid, i, strconv.Itoa(j))
+			err := store.AddCompositeOutput(CompositeIndexName, []string{output.GetOutputAddr(), txid, i, strconv.Itoa(j)}, output.GetOutputValue())
 			if err != nil {
+				logger.Error(err.Error())
 				return shim.Error(err.Error())
 			}
 			assets -= output.GetOutputValue()
@@ -65,12 +76,14 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 
 		//fee
 		logger.Debugf("fee: add composite output [%v] [%v] [%v] [0]",InitAddr, txid, string(i))
-		err = store.AddCompositeOutput(CompositeIndexName, []string{txFeeInfo.GetTxFeeAddr(), txid, string(i), "0"}, tx.GetFee())
+		err = store.AddCompositeOutput(CompositeIndexName, []string{txFeeInfo.GetTxFeeAddr(), txid, string(i), "-1"}, tx.GetFee())
 		if err != nil {
+			logger.Error(err.Error())
 			return shim.Error(err.Error())
 		}
 		assets -= tx.GetFee()
 		if assets < 0 {
+			logger.Error(ErrAccountNotEnoughBalance.Error())
 			return shim.Error(ErrAccountNotEnoughBalance.Error())
 		}
 
@@ -79,6 +92,7 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 		inputPocket.Balance = assets
 		err = store.PutPocket(inputPocket)
 		if err != nil {
+			logger.Error(err.Error())
 			return shim.Error(err.Error())
 		}
 	}
@@ -87,13 +101,17 @@ func (t *PocketChaincode)transfer(store Store, args []string) pb.Response {
 }
 
 func VerifyTx(tx *TXMap_TX, publicKey string, txFeeInfo *TxFeeInfo, store Store) bool {
+	if !IsValidAddr(tx.GetInputAddr(), publicKey) {
+		return false
+	}
+
 	assets, nounce, err := store.GetAllAssets(tx.GetInputAddr())
 	if err != nil {
 		return false
 	}
 	//nounce和总资产是否符合
 	logger.Debugf("assets [%v] input balance [%v] nounce [%v] input nounce [%v]", assets, tx.GetInputBalance(), nounce, tx.GetNounce())
-	if assets <= tx.GetInputBalance() || nounce != tx.GetNounce() {
+	if assets < tx.GetInputBalance() || nounce != tx.GetNounce() {
 		return false
 	}
 	var outputValue int64
