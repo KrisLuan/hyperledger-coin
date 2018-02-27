@@ -6,6 +6,8 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/base64"
+	"strconv"
 )
 
 // MakeChaincodeStore returns a store for storing keys in the state
@@ -67,7 +69,26 @@ func ParseTxMaps(data []byte) (*TXMap, error) {
 }
 
 func IsValidAddr(addr string, pubkey string) bool {
-	return !strings.Contains(addr, "_")
+	logger.Debugf("addr is [%v], pubkey is [%v]", addr, pubkey)
+	if strings.Contains(addr, "_") {
+		return false
+	}
+
+	pubbyte, err := base64.StdEncoding.DecodeString(pubkey)
+	if err != nil {
+		logger.Error(err.Error())
+		return false
+	}
+	public, err := hex.DecodeString(byteToHexString(pubbyte))
+	if err != nil {
+		logger.Error(err.Error())
+		return false
+	}
+	if !(addr == NewAddrFromPubkey([]byte(public), byte(version)).String()) {
+		logger.Errorf("addr [%v] is not equal to addrFromPublicKey [%v]", addr, NewAddrFromPubkey([]byte(public), byte(version)).String())
+		return false
+	}
+	return true
 }
 
 // TxHash generates the Hash for the transaction.
@@ -92,4 +113,16 @@ func ParseTxFeeInfo(data []byte) (*TxFeeInfo, error) {
 	}
 
 	return txFeeInfo, nil
+}
+
+func byteToHexString(byteArray []byte) string {
+	result := ""
+	for i := 0; i < len(byteArray); i++ {
+		hex := strconv.FormatInt(int64(byteArray[i]&0xFF), 16)
+		if len(hex) == 1 {
+			hex = "0" + hex
+		}
+		result += hex
+	}
+	return strings.ToUpper(result)
 }
