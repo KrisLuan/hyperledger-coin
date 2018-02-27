@@ -84,6 +84,7 @@ func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPo
 	pocket := &Pocket{
 		Addr: 		addr,
 		Balance:	totalPoint,
+		Pubkey:		pubkey,
 	}
 	logger.Debugf("init [%s] [%s]", addr, totalPoint)
 	if err := s.PutPocket(pocket); err != nil {
@@ -256,7 +257,8 @@ func (s *ChaincodeStore)GetTxID() string {
 }
 
 func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []string, value int64) error {
-	compositeKey, compositeErr := s.stub.CreateCompositeKey(CompositeIndexName, attributes)
+	logger.Debug("composite key ", objectType, attributes)
+	compositeKey, compositeErr := s.stub.CreateCompositeKey(objectType, attributes)
 	if compositeErr != nil {
 		return compositeErr
 	}

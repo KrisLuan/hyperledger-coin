@@ -42,8 +42,10 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Debugf("pocket chaincode invoke")
 	function, args := stub.GetFunctionAndParameters()
 	if len(args) == 0 {
+		logger.Error(ErrInvalidArgs.Error());
 		return shim.Error(ErrInvalidArgs.Error())
 	}
+	logger.Debugf("function [%v] args [%v]", function, args)
 	store := MakeChaincodeStore(stub, args[0])
 
 	switch function {
@@ -64,6 +66,7 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case QF_POINTKIND:
 		return t.queryPointkind(store, args)
 	default:
+		logger.Error(ErrInvalidFunction.Error())
 		return shim.Error(ErrInvalidFunction.Error())
 	}
 
