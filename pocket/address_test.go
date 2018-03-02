@@ -5,16 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"testing"
-
-	//"github.com/hyperledger/fabric/coinbase/secp256k1"
-	"strings"
-	strconv "strconv"
 )
 
 func TestNewAddrFromPubkey(t *testing.T) {
 
 	privatekey, err := hex.DecodeString(InitPrikey)
-	pubstring := InitPubkey
+	pubstring := "03d05c8dd917f038c383788e0f7d4963aa98dcdb6fd7ace659259896f5fedc818c"
 
 	pubbyte, err := base64.StdEncoding.DecodeString(pubstring)
 	fmt.Println("hex", byteToHexString(pubbyte))
@@ -31,15 +27,4 @@ func TestNewAddrFromPubkey(t *testing.T) {
 	addr := NewAddrFromPubkey(pubkey, byte(version))
 	//fmt.Println(addr)
 	fmt.Println(addr.String())
-}
-func byteToHexString(byteArray []byte) string {
-	result := ""
-	for i := 0; i < len(byteArray); i++ {
-		hex := strconv.FormatInt(int64(byteArray[i]&0xFF), 16)
-		if len(hex) == 1 {
-			hex = "0" + hex
-		}
-		result += hex
-	}
-	return strings.ToUpper(result)
 }
