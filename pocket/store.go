@@ -191,6 +191,10 @@ func (s * ChaincodeStore) ModifyPointKind(kind string) error {
 }
 
 func (s *ChaincodeStore)MergeStateByPartialCompositeKey(objectType string, keys []string) (int64, error) {
+	attributesTemp := []string{s.kind}
+	keys = append(attributesTemp, keys...)
+
+	logger.Debug("composite key ", objectType, keys)
 	resultIterator, err := s.stub.GetStateByPartialCompositeKey(objectType, keys)
 	if err != nil {
 		return 0, err
@@ -223,7 +227,7 @@ func (s *ChaincodeStore)MergeStateByPartialCompositeKey(objectType string, keys 
 
 //注意，这个函数和上面的getPocket有重复读取的问题，混用要注意了,重复读取可能会有不一致的情况
 func (s *ChaincodeStore) GetAllAssets(addr string) (int64, int64, error) {
-	resultIterator, err := s.stub.GetStateByPartialCompositeKey(CompositeIndexName, []string{addr})
+	resultIterator, err := s.stub.GetStateByPartialCompositeKey(CompositeIndexName, []string{s.kind, addr})
 	if err != nil {
 		return 0, 0, err
 	}
@@ -257,6 +261,9 @@ func (s *ChaincodeStore)GetTxID() string {
 }
 
 func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []string, value int64) error {
+	attributesTemp := []string{s.kind}
+	attributes = append(attributesTemp, attributes...)
+
 	logger.Debug("composite key ", objectType, attributes)
 	compositeKey, compositeErr := s.stub.CreateCompositeKey(objectType, attributes)
 	if compositeErr != nil {
