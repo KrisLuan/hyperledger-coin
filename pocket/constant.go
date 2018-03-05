@@ -14,6 +14,7 @@ const (
 	InitPrikey string			= "53DAFF852B6207DD92936541115BCC703C2A6062F7B7C0B497D30475156D9140"
 	//联合键注意，addr是不能包含‘_’的
 	CompositeIndexName string	= "foam_point"
+	RatioMax					= 10000
 )
 
 const (

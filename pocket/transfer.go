@@ -129,7 +129,7 @@ func VerifyTx(tx *TXMap_TX, publicKey string, txFeeInfo *TxFeeInfo, store Store)
 	}
 
 	//验证交易费是否大于0.2%
-	if !(tx.GetFee()*1000/outputValue >= txFeeInfo.GetRatio()) {
+	if !(tx.GetFee()*RatioMax/outputValue >= txFeeInfo.GetRatio()) {
 		logger.Errorf(ErrNotEnoughFee.Error())
 		return false
 	}

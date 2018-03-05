@@ -36,6 +36,7 @@ const (
 	QF_BALANCE string		= "query_balance"
 	QF_STATISTICS string	= "query_statistics"
 	QF_POINTKIND string		= "query_pointkind"
+	QF_TXFEE				= "query_txfee"
 )
 
 func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
@@ -65,6 +66,8 @@ func (t *PocketChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.queryStatistics(store, args)
 	case QF_POINTKIND:
 		return t.queryPointkind(store, args)
+	case QF_TXFEE:
+		return t.queryTxFee(store, args)
 	default:
 		logger.Error(ErrInvalidFunction.Error())
 		return shim.Error(ErrInvalidFunction.Error())

@@ -12,7 +12,8 @@ func (t *PocketChaincode)modifyTxFee(store Store, args []string) pb.Response {
 		return shim.Error(ErrInvalidArgs.Error())
 	}
 
-	ratio, err := strconv.ParseInt(args[1], 10, 32)
+	txFeeAddr := args[1]
+	ratio, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		logger.Error(err.Error())
 		return shim.Error(err.Error())
@@ -25,6 +26,7 @@ func (t *PocketChaincode)modifyTxFee(store Store, args []string) pb.Response {
 	}
 
 	txFeeInfo.Ratio = ratio
+	txFeeInfo.TxFeeAddr = txFeeAddr
 	if err := store.PutTxFeeInfo(txFeeInfo); err != nil {
 		logger.Error(err.Error())
 		return shim.Error(err.Error())

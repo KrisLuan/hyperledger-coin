@@ -93,3 +93,23 @@ func (t *PocketChaincode)queryBalance(store Store, args []string) pb.Response {
 	base64.StdEncoding.Encode(protobytebase64, []byte(s))
 	return shim.Success(protobytebase64)
 }
+
+func (t *PocketChaincode)queryTxFee(store Store, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error(ErrInvalidArgs.Error())
+	}
+
+	txFeeInfo, err := store.GetTxFeeInfo()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	logger.Debugf("tx fee info [%v]", txFeeInfo)
+	data, err := proto.Marshal(txFeeInfo)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	protobytebase64 := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
+	base64.StdEncoding.Encode(protobytebase64, []byte(data))
+	return shim.Success(protobytebase64)
+}

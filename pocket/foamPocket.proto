@@ -34,7 +34,7 @@ message TXMap{
 
 message TxFeeInfo {
     string txFeeAddr = 1;
-    //除以1000为手续费比例
+    //除以10000为手续费比例
     int64 ratio = 2;
 }
 
