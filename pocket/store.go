@@ -42,6 +42,9 @@ type ChaincodeStore struct {
 }
 
 //可能需要加入公钥字段，同时验证私钥的合法性
+/*
+	初始化设置
+*/
 func (s *ChaincodeStore)InitPocket(addr string, pubkey string, totalPoint int64) error {
 	kind := []string{DefaultPocketKind}
 	pointKind := &PointKind{
@@ -58,6 +61,12 @@ func (s *ChaincodeStore)InitPocket(addr string, pubkey string, totalPoint int64)
 }
 
 //初始化积分统计信息和初始积分
+/*
+	这个函数主要包括以下操作
+	1.设置交易费以及交易费收取地址
+	2.设置初始账户
+	3.在区块链上设置账户信息
+*/
 func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPoint int64) error {
 	if !IsValidAddr(InitAddr, pubkey) {
 		logger.Debugf("test")
@@ -96,10 +105,12 @@ func (s *ChaincodeStore)InitPocketStatistics(addr string, pubkey string, totalPo
 }
 
 //地址不允许包含‘_’，积分种类也不允许包含‘_’
+//生成key, kind_addr 	--ly
 func (s *ChaincodeStore) generateKey(addr string) string {
 	return fmt.Sprintf("%s_%s", s.kind, addr)
 }
 
+//  pointInfoKey是定义的一个常量，需要考虑之前存的是什么   --ly
 func (s *ChaincodeStore) GetPointInfo() (*PointInfo, error) {
 	data, err := s.stub.GetState(s.generateKey(pointInfoKey))
 	if err != nil {
@@ -109,6 +120,7 @@ func (s *ChaincodeStore) GetPointInfo() (*PointInfo, error) {
 	return ParsePointInfo(data)
 }
 
+//这里是设置PointInfo的地方，
 func (s *ChaincodeStore) PutPointInfo(pointInfo *PointInfo) error {
 	coinBytes, err := proto.Marshal(pointInfo)
 	if err != nil {
@@ -122,6 +134,16 @@ func (s *ChaincodeStore) PutPointInfo(pointInfo *PointInfo) error {
 	return nil
 }
 
+
+/*
+	获取用户存在区块链上的信息，并用 ParsePocket()解析，
+	其中涉及一个proto的数据结构，如下：
+	message Pocket {
+    		string addr = 1;    //用户地址
+    		int64 balance = 2;  //余额
+    		string pubkey = 3;  //用户公钥
+	}
+*/
 func (s *ChaincodeStore) GetPocket(addr string) (*Pocket, error) {
 	if addr == "" {
 		return nil, ErrEmptyAddr
@@ -135,6 +157,8 @@ func (s *ChaincodeStore) GetPocket(addr string) (*Pocket, error) {
 	return ParsePocket(data)
 }
 
+
+//与上面那个函数相互对应，在区块链上记录数据信息
 func (s *ChaincodeStore) PutPocket(pocket *Pocket) error {
 	logger.Debugf("put pocket [%v]", pocket)
 	key := s.generateKey(pocket.Addr)
@@ -147,6 +171,7 @@ func (s *ChaincodeStore) PutPocket(pocket *Pocket) error {
 	return s.stub.PutState(key, data)
 }
 
+//在区块链上记录积分种类，pointKind是proto的数据结构，kindKey 在constant.go中被定义 --ly
 func (s *ChaincodeStore) PutPointKind(pointKind *PointKind) error {
 	logger.Debugf("put point kind [%v]", pointKind)
 	data, err := proto.Marshal(pointKind)
@@ -156,6 +181,7 @@ func (s *ChaincodeStore) PutPointKind(pointKind *PointKind) error {
 	return s.stub.PutState(kindKey, data)
 }
 
+//获取积分数据结构Pointkind信息，ParsePointKind在utils.go中被定义	--ly
 func (s *ChaincodeStore) GetPointKind() (*PointKind, error) {
 	data, err := s.stub.GetState(kindKey)
 	if err != nil {
@@ -165,6 +191,9 @@ func (s *ChaincodeStore) GetPointKind() (*PointKind, error) {
 	return ParsePointKind(data)
 }
 
+/*
+	积分属性信息的修改
+*/
 func (s *ChaincodeStore) ModifyPointInfo(increaseAccount int64, increaseTx int64, increasePoint int64) error {
 	pointInfo, err := s.GetPointInfo()
 	if err != nil {
@@ -179,6 +208,7 @@ func (s *ChaincodeStore) ModifyPointInfo(increaseAccount int64, increaseTx int64
 	return s.PutPointInfo(pointInfo)
 }
 
+//修改积分种类信息，加入其他的积分种类 --ly
 func (s * ChaincodeStore) ModifyPointKind(kind string) error {
 	pointKind, err := s.GetPointKind()
 	if err != nil {
@@ -190,6 +220,8 @@ func (s * ChaincodeStore) ModifyPointKind(kind string) error {
 	return s.PutPointKind(pointKind)
 }
 
+//GetStateByPartialCompositeKey（）函数根据给的部分字首，返回匹配的一个迭代器，不太理解
+//是不是将一堆地址的上的积分合并的函数？
 func (s *ChaincodeStore)MergeStateByPartialCompositeKey(objectType string, keys []string) (int64, error) {
 	attributesTemp := []string{s.kind}
 	keys = append(attributesTemp, keys...)
@@ -256,9 +288,12 @@ func (s *ChaincodeStore) GetAllAssets(addr string) (int64, int64, error) {
 	return assets, pocket.GetBalance(), nil
 }
 
+//获取交易id，需要具体了解 stub.GetTxID()
 func (s *ChaincodeStore)GetTxID() string {
 	return s.stub.GetTxID()
 }
+
+
 
 func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []string, value int64) error {
 	attributesTemp := []string{s.kind}
@@ -276,6 +311,7 @@ func (s *ChaincodeStore)AddCompositeOutput(objectType string, attributes []strin
 	return nil
 }
 
+//将交易费信息记录到区块链中	 	--ly
 func (s *ChaincodeStore) PutTxFeeInfo(txFeeInfo *TxFeeInfo) error {
 	logger.Debugf("put point kind [%v]", txFeeInfo)
 	data, err := proto.Marshal(txFeeInfo)
@@ -285,6 +321,7 @@ func (s *ChaincodeStore) PutTxFeeInfo(txFeeInfo *TxFeeInfo) error {
 	return s.stub.PutState(s.kind + "_" + txFeeKey, data)
 }
 
+//获取交易费信息	--ly
 func (s *ChaincodeStore) GetTxFeeInfo() (*TxFeeInfo, error) {
 	data, err := s.stub.GetState(s.kind + "_" + txFeeKey)
 	if err != nil {
