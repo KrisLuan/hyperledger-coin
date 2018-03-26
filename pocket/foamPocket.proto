@@ -1,4 +1,4 @@
-
+//自动生成pb.go文件时，需要更改proto引用的位置，在本文件夹下
 syntax = "proto3";
 
 package pocket;
@@ -30,6 +30,12 @@ message TXMap{
     map<string, TX> txMap = 1;
     int64 timestamp = 2;
     string founder = 3;
+}
+
+message TxFeeInfo {
+    string txFeeAddr = 1;
+    //除以10000为手续费比例
+    int64 ratio = 2;
 }
 
 message PointInfo {
